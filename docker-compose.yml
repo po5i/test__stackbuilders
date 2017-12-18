@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: releaseserver
+
+  nginx:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./static:/usr/src/app/static
+    links:
+      - web
+    depends_on:
+      - web
+      
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-web
+    command: /start.sh
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: releaseserver
+      DB_USERNAME: releaseserver
+      DB_PASSWORD: secret
+      TOKEN_SECRET: change_me_in_production

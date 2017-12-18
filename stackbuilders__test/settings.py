@@ -22,10 +22,32 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '02b!z^0-%r%o(5+q0und*x(hx6$j#5)&*@643$uhd#g)x3q&k7'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if ('DB_USERNAME' in os.environ):
+    DEBUG = False
 
-ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['*']
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['DB_NAME'],
+            'USER': os.environ['DB_USERNAME'],
+            'PASSWORD': os.environ['DB_PASSWORD'],
+            'HOST': os.environ['DB_HOST'],
+            'PORT': os.environ['DB_PORT'],
+        }
+    }
+else:
+    DEBUG = True
+
+    ALLOWED_HOSTS = []
+
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 # Application definition
@@ -70,16 +92,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stackbuilders__test.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
 
 
 # Password validation
