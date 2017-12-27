@@ -48,3 +48,5 @@ Stop
 	`python manage.py crawl 30 --words_greater=5 --order=comments`
 * To get the latest 30 news and filter all previous entries with less than or equal to five words in the title ordered by points.
 	`python manage.py crawl 30 --words_less=5 --order=points`
+
+Note, if you are Docker-deploying the crawler for the first time, make sure to rebuild the container and run the migrate command once.
