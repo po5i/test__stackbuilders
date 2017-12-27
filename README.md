@@ -15,7 +15,6 @@
 * Run the program
 	`python manage.py calculate '{"rentDates":["2017-11-19T05:00:00.000Z","2017-11-20T05:00:00.000Z","2017-11-21T05:00:00.000Z"],"car":{"model":"Cherato","type":"sport"},"membership":false,"age":24}'`
 
-
 # Docker deployment
 
 `docker-compose build`
@@ -40,3 +39,12 @@ Run the program like this:
 Stop
 
 `docker-compose stop`
+
+# Testing the HackerNews Crawler
+
+* To get the latest 30 news.
+	`python manage.py crawl 30`
+* To get the latest 30 news and filter all previous entries with more than five words in the title ordered by amount of comments first.
+	`python manage.py crawl 30 --words_greater=5 --order=comments`
+* To get the latest 30 news and filter all previous entries with less than or equal to five words in the title ordered by points.
+	`python manage.py crawl 30 --words_less=5 --order=points`

@@ -12,6 +12,14 @@ class Entry(models.Model):
     comments = models.IntegerField()
     points = models.IntegerField()
 
+    def as_dict(self):
+        return {
+            "title": self.title,
+            "order": self.order,
+            "comments": self.comments,
+            "points": self.points,
+        }
+
 class Crawl(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
@@ -26,9 +34,12 @@ class Crawl(models.Model):
             order = element.find('span', {'class': 'rank'}).string.replace('.', '')
             id = element.get('id')
             title = element.find('a', {'class': 'storylink'}).string
-            points = element.next_sibling.find('span', {'class': 'score'}).string.replace(' points', '')
-            comments = element.next_sibling.find_all('a', {'href': 'item?id='+id})[1].string.replace(' comments', '').replace(' comment', '')
             try:
+                points = element.next_sibling.find('span', {'class': 'score'}).string.replace(' points', '')
+            except:
+                points = 0
+            try:
+                comments = element.next_sibling.find_all('a', {'href': 'item?id='+id})[1].string.replace(' comments', '').replace(' comment', '')
                 comments = int(comments)
             except:
                 comments = 0
