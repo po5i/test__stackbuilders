@@ -22,7 +22,6 @@ class Crawl(models.Model):
         soup = BeautifulSoup(text, 'html.parser')
         count = 0
 
-        # for element in soup.findAll('a', {'class': 'storylink'}):
         for element in soup.findAll('tr', {'class': 'athing'}):
             order = element.find('span', {'class': 'rank'}).string.replace('.', '')
             id = element.get('id')
@@ -40,4 +39,24 @@ class Crawl(models.Model):
             if count > max_items:
                 break
 
+    def filter(self, **kwargs):
+        num_words_greater = kwargs.get('words_greater')
+        num_words_less = kwargs.get('words_less')
+        arg_order = kwargs.get('order')
+        
+        objects = Entry.objects.filter(crawl=self)
+        output = []
+        
+        if arg_order:
+            objects = objects.order_by('-' + arg_order)
 
+        for obj in objects:
+            words = len(obj.title.split())
+            if num_words_greater:
+                if words > num_words_greater:
+                    output.append(obj)
+            elif num_words_less:
+                if words <= num_words_less:
+                    output.append(obj)
+
+        return output

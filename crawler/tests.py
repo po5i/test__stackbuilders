@@ -6,13 +6,6 @@ from crawler.models import Crawl, Entry
 
 class CrawlerTestCase(TestCase):
 
-    # def setUp(self):
-    #     """ 
-    #     Setup the initial data
-    #     """
-    #     crawl = Crawl.objects.create()
-    #     self.__class__.crawl = crawl
-
     def test_01_first30(self):
         """
         Get the first 30 entries
@@ -21,7 +14,33 @@ class CrawlerTestCase(TestCase):
         crawl.perform_crawl(30)
         self.assertEqual(crawl.entries.all().count(),30)
 
+    def test_02_filter5words_greater_order_by_comments(self):
+        """
+        Filter all previous entries with more than five words in the title ordered by amount of comments first.
+        """
+        crawl = Crawl.objects.create()
+        crawl.perform_crawl(30)
+        filtered = crawl.filter(words_greater=5, order='comments')
+        comments = 0
 
-    # Filter all previous entries with more than five words in the title ordered by amount of comments first.
-    # Filter all previous entries with less than or equal to five words in the title ordered by points.
-    
+        for f in filtered:
+            self.assertTrue(len(f.title.split()) > 5)
+            if comments != 0:
+                self.assertTrue(f.comments <= comments)
+            comments = f.comments
+
+    def test_03_filter5words_less_order_by_points(self):
+        """
+        Filter all previous entries with less than or equal to five words in the title ordered by points.
+        """
+        crawl = Crawl.objects.create()
+        crawl.perform_crawl(30)
+        filtered = crawl.filter(words_less=5, order='points')
+        points = 0
+
+        for f in filtered:
+            self.assertTrue(len(f.title.split()) <= 5)
+            if points != 0:
+                self.assertTrue(f.points <= points)
+            points = f.points
+
