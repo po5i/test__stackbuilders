@@ -28,27 +28,67 @@ class Crawl(models.Model):
         source = requests.get(url)
         text = source.text
         soup = BeautifulSoup(text, 'html.parser')
-        count = 0
+        error = False
 
-        for element in soup.findAll('tr', {'class': 'athing'}):
+        def elementAnalysis(element):
             order = element.find('span', {'class': 'rank'}).string.replace('.', '')
             id = element.get('id')
             title = element.find('a', {'class': 'storylink'}).string
             try:
                 points = element.next_sibling.find('span', {'class': 'score'}).string.replace(' points', '')
             except:
-                points = 0
+                return False
             try:
                 comments = element.next_sibling.find_all('a', {'href': 'item?id='+id})[1].string.replace(' comments', '').replace(' comment', '')
                 comments = int(comments)
             except:
-                comments = 0
+                return False
             
-            entry = Entry.objects.create(crawl=self, title=title, order=order, comments=comments, points=points)
+            return {
+                "title": title, 
+                "order": order, 
+                "comments": comments, 
+                "points": points
+            }
             
-            count += 1
-            if count > max_items:
-                break
+        # parsedList = []
+        # for element in soup.findAll('tr', {'class': 'athing'}):
+        #     parsed = elementAnalysis(element)
+        #     if not parsed:
+        #         continue
+        #     parsedList.append(parsed)
+
+        parsedList = list(map(elementAnalysis, soup.findAll('tr', {'class': 'athing'})))
+
+        # filter Falses:
+        parsedListFiltered = list(filter(lambda x: x != False, parsedList))
+
+        for p in parsedListFiltered:
+            Entry.objects.create(crawl=self, title=p["title"], order=p["order"], comments=p["comments"], points=p["points"])
+
+
+            # order = element.find('span', {'class': 'rank'}).string.replace('.', '')
+            # id = element.get('id')
+            # title = element.find('a', {'class': 'storylink'}).string
+            # try:
+            #     points = element.next_sibling.find('span', {'class': 'score'}).string.replace(' points', '')
+            # except:
+            #     # points = 0
+            #     continue
+            # try:
+            #     comments = element.next_sibling.find_all('a', {'href': 'item?id='+id})[1].string.replace(' comments', '').replace(' comment', '')
+            #     comments = int(comments)
+            # except:
+            #     # comments = 0
+            #     continue
+            
+            # entry = Entry.objects.create(crawl=self, title=title, order=order, comments=comments, points=points)
+            
+            # count += 1
+            # if count > max_items:
+            #     break
+
+        return True
 
     def filter(self, **kwargs):
         num_words_greater = kwargs.get('words_greater')
@@ -61,13 +101,24 @@ class Crawl(models.Model):
         if arg_order:
             objects = objects.order_by('-' + arg_order)
 
-        for obj in objects:
-            words = len(obj.title.split())
-            if num_words_greater:
-                if words > num_words_greater:
-                    output.append(obj)
-            elif num_words_less:
-                if words <= num_words_less:
-                    output.append(obj)
+        def criteria_greater(obj):
+            return len(obj.title.split()) > num_words_greater
+
+        def criteria_less(obj):
+            return len(obj.title.split()) <= num_words_less
+
+        if num_words_greater:
+            output = list(filter(criteria_greater, objects))
+        elif num_words_less:
+            output = list(filter(criteria_less, objects))
+
+        # for obj in objects:
+        #     words = len(obj.title.split())
+        #     if num_words_greater:
+        #         if words > num_words_greater:
+        #             output.append(obj)
+        #     elif num_words_less:
+        #         if words <= num_words_less:
+        #             output.append(obj)
 
         return output

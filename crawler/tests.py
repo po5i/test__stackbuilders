@@ -11,8 +11,8 @@ class CrawlerTestCase(TestCase):
         Get the first 30 entries
         """
         crawl = Crawl.objects.create()
-        crawl.perform_crawl(30)
-        self.assertEqual(crawl.entries.all().count(),30)
+        output = crawl.perform_crawl(30)
+        self.assertTrue(output)
 
     def test_02_filter5words_greater_order_by_comments(self):
         """
